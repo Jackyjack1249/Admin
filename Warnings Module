@@ -1,0 +1,18 @@
+local module = {}
+module.Config = {
+	Ban = 3 -- 3 warns is equal to a ban
+}
+
+module.Players = {
+	-- The name of table doesn't matter (just for future knowledge)
+	Roblox = {
+		UserId = 1,
+		
+		TotalWarnings = 1,
+		
+		Warning1 = "Reason should be added here.",
+		Warning2 = "Reason should be added here.",
+		Warning3 = "Reason should be added here."
+	},
+}
+return module
