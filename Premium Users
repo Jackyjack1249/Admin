@@ -1,0 +1,47 @@
+local Players = game:GetService("Players")
+local DataStoreService = game:GetService("DataStoreService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local PremiumStore = DataStoreService:GetDataStore("GlobalPremiumCount")
+
+-- Utility function to change the count
+local function changePremiumCount(amount)
+	local success, err = pcall(function()
+		PremiumStore:UpdateAsync("PremiumCount", function(currentValue)
+			currentValue = currentValue or 0
+			return currentValue + amount
+		end)
+	end)
+
+	if not success then
+		warn("DataStore failed to update PremiumCount:", err)
+	end
+end
+
+-- Player added
+Players.PlayerAdded:Connect(function(player)
+	if player.MembershipType == Enum.MembershipType.Premium then
+		changePremiumCount(1)
+	end
+end)
+
+-- Player removing
+Players.PlayerRemoving:Connect(function(player)
+	if player.MembershipType == Enum.MembershipType.Premium then
+		changePremiumCount(-1)
+	end
+end)
+
+-- Remote function to get the count
+ReplicatedStorage.Admin.GetPremium.OnServerInvoke = function()
+	local value = 0
+	local success, err = pcall(function()
+		value = PremiumStore:GetAsync("PremiumCount")
+	end)
+
+	if not success then
+		warn("Failed to get PremiumCount:", err)
+	end
+
+	return value or 0
+end
