@@ -1,0 +1,7 @@
+local AssetCount = 0
+
+for i, Assets in pairs(game:GetDescendants()) do
+	AssetCount += 1
+end
+
+script.Parent.Text = 'Asset count: <font color="#aa55ff">'..tostring(AssetCount)..'</font>'
