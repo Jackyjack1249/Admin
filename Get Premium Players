@@ -1,0 +1,8 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+while wait(5) do
+	local Amount = ReplicatedStorage.Admin.GetPremium:InvokeServer()
+	
+	print(Amount)
+	script.Parent.Text = 'Active premium players: <font color="##ffaa00">'..Amount..'</font>'
+end
