@@ -1,0 +1,54 @@
+local joinTimes = {}
+
+local Players = game:GetService("Players")
+local DataStoreService = game:GetService("DataStoreService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local TimeStore = DataStoreService:GetDataStore("GlobalJoinTime")
+
+-- Utility function to change the count
+local function changeJoinTime(PlayTime)
+	local success, err = pcall(function()
+		TimeStore:UpdateAsync("JoinTimePlayTime", function(currentValue)
+			currentValue = currentValue or 0
+			return currentValue + PlayTime
+		end)
+
+		TimeStore:UpdateAsync("JoinTimePlayers", function(currentValue)
+			currentValue = currentValue or 0
+			return currentValue + 1
+		end)
+	end)
+
+	if not success then
+		warn("DataStore failed to update Join Time:", err)
+	end
+end
+
+
+Players.PlayerAdded:Connect(function(player)
+	joinTimes[player] = tick()
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+	local PlayTime = tick() - (joinTimes[player] or tick())
+	joinTimes[player] = nil
+
+	changeJoinTime(PlayTime)
+end)
+
+ReplicatedStorage.Admin.GetJoinTime.OnServerInvoke = function()
+	local JoinTime = 0
+	local Players = 0
+	
+	local success, err = pcall(function()
+		JoinTime = TimeStore:GetAsync("JoinTimePlayTime")
+		Players = TimeStore:GetAsync("JoinTimePlayers")
+	end)
+
+	if not success then
+		warn("Failed to get PremiumCount:", err)
+	end
+
+	return math.floor(JoinTime / Players) or 0
+end
