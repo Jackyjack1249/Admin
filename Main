@@ -1,0 +1,188 @@
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+local PlayerService = game:GetService("Players")
+local TeleportService = game:GetService("TeleportService")
+
+local Proxy = "My Proxy Is Usually Here, As It's a Personal One I've Removed It. ROPROXY WILL NOT WORK! IT NEEDS YOUR OWN ONE"
+
+local UniverseIdApi = "https://apis.roblox.com/universes/v1/places/"..game.PlaceId.."/universe"
+local GameInfoApi = "https://games.roblox.com/v1/games?universeIds=%s"
+local ServersApi = "https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/0?sortOrder=Asc&limit=100"
+local GamepassApi = "https://games.roproxy.com/v1/games/%d/game-passes?limit=100&sortOrder=Asc"
+local BanModule = require(script.Ban.BannedUsers)
+local ModModule = require(script.Moderation)
+local WarnModule = require(script.Warnings)
+
+local Marketplace = game:GetService("MarketplaceService")
+
+--// Live Data
+local ConcurrentPlayers
+local ModeratorsOnline = 0
+local AllServers = 0
+
+--// Statistics
+local BannedPlayers = 0
+local UnbannedPlayers = 0
+local WarnedPlayers = 0
+
+--// Revenue
+local GamepassSales = 0
+local PremiumStuff = 0
+
+local function GetServers(Cursor)
+	task.wait(1)
+	local ServerData
+	local Finished = false
+	
+	local Success, Error = pcall(function()
+		if Cursor then
+			ServerData = HttpService:GetAsync(Proxy..HttpService:UrlEncode(ServersApi.."&cursor="..Cursor))
+		else
+			ServerData = HttpService:GetAsync(Proxy..HttpService:UrlEncode(ServersApi))
+		end
+	end)
+
+	if Success then
+		ServerData = HttpService:JSONDecode(ServerData)
+
+		for _, server in ipairs(ServerData.data) do
+			AllServers += 1
+		end
+
+		if ServerData.nextPageCursor then
+			GetServers(ServerData.nextPageCursor)
+		else
+			Finished = true
+		end
+	else
+		warn(Error)
+		wait(2)
+		GetServers(Cursor)
+	end
+	
+	print("Servers: "..AllServers)
+	print(AllServers)
+end
+
+local function CurrentPlayers()
+	GameInfoApi = string.format(GameInfoApi, UniverseId)
+	
+	local Success, Error = pcall(function()
+		ConcurrentPlayers = HttpService:GetAsync(Proxy..GameInfoApi)
+	end)
+	
+	if Success then
+		--// If success we'll return the result
+		ConcurrentPlayers = HttpService:JSONDecode(ConcurrentPlayers)["data"][1]["playing"]
+		print("Concurrent Players: "..ConcurrentPlayers)
+	else
+		--// If there's an error we'll return nil
+		warn(Error)
+		return nil
+	end
+end
+
+local function WarnedPlayersFunc()
+	for _ in pairs(WarnModule.Players) do
+		WarnedPlayers += 1
+	end
+	
+	print("Warned Users: "..WarnedPlayers)
+end
+
+local function ModsOnline()
+	ModeratorsOnline = 0
+	
+	for i, Moderator in pairs(ModModule.Moderators) do
+		local friendSuccess, errorMessage, blank, placeId, jobId = pcall(function()
+			return TeleportService:GetPlayerPlaceInstanceAsync(Moderator)
+		end)
+		
+		if friendSuccess then
+			if placeId == game.PlaceId then
+				ModeratorsOnline += 1
+			end
+		else
+			warn(errorMessage)
+		end
+	end
+	
+	print("Moderators Online: "..ModeratorsOnline)
+end
+
+local function AmountBanned()
+	for i, BannedUsers in pairs(BanModule.Players) do
+		if BannedUsers["Banned"] == true then
+			BannedPlayers += 1
+		else
+			UnbannedPlayers += 1
+		end
+	end
+	
+	print(BannedPlayers.." people are banned")
+	print(UnbannedPlayers.." people are un-banned")
+end
+
+local function RevenueGamepasses()
+	--// Create a PCall so we can attempt to get the gamepasses for this Universe
+	local Result
+	
+	print(UniverseId)
+	print(string.format(GamepassApi, UniverseId))
+	
+	local Success, Error = pcall(function()
+		Result = HttpService:GetAsync(string.format(GamepassApi, UniverseId))
+	end)
+
+	if Success then
+		--// If success we'll decode the result and get the data section from the table
+		local Decoded = HttpService:JSONDecode(Result)
+		local Data = Decoded["data"]
+
+		--// Create a for loop for the data
+		for i = 1, #Data do
+			--// Get product info for the iD in the data
+			local AdditionalInformation = Marketplace:GetProductInfo(Data[i]["id"], Enum.InfoType.GamePass)
+			
+			GamepassSales = GamepassSales + AdditionalInformation["PriceInRobux"] * AdditionalInformation["Sales"]
+		end
+	else
+		warn(Error)
+	end
+end
+
+--// Attempt to retrieve Universe Id
+local function RetrieveUniverseId()
+	--// Create a PCall to get the Id
+	local Result
+	
+	local Success, Error = pcall(function()
+		Result = HttpService:GetAsync(Proxy..UniverseIdApi)
+	end)
+
+	if Success then
+		--// If success we'll set the UniverseId Variable to the Id
+		UniverseId = HttpService:JSONDecode(Result)["universeId"]
+		
+		print("Universe Id: "..UniverseId)
+		
+		CurrentPlayers()
+		AmountBanned()
+		ModsOnline()
+		WarnedPlayersFunc()
+		GetServers(nil)
+		RevenueGamepasses()
+		--// We'll also call the Gamepass function so it can proceed
+	else
+		task.wait(1)
+		RetrieveUniverseId()
+	end
+end
+
+RetrieveUniverseId()
+
+task.wait(5)
+
+game:GetService("ReplicatedStorage").Admin.LiveData:FireAllClients(ConcurrentPlayers, ModeratorsOnline, AllServers)
+game:GetService("ReplicatedStorage").Admin.Statistics:FireAllClients(BannedPlayers, UnbannedPlayers, WarnedPlayers)
+game:GetService("ReplicatedStorage").Admin.Revenue:FireAllClients(GamepassSales)
