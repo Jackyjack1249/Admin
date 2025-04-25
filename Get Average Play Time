@@ -1,0 +1,15 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Minutes = 0
+
+while wait(5) do
+	local Amount = ReplicatedStorage.Admin.GetJoinTime:InvokeServer()
+	Minutes = 0
+	
+	repeat
+		Amount -= 60
+		Minutes += 1
+	until Amount < 60
+
+	script.Parent.Text = 'Average playtime: <font color="##ffaa00">'..Minutes..' minutes and '..Amount..' seconds</font>'
+end
