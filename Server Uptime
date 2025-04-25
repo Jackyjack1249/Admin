@@ -1,0 +1,15 @@
+local TotalHours = 0
+local TotalMinutes = 0
+
+script.Parent.Text = 'Server uptime: <font color="#aa55ff">0 Hours and 0 minutes</font>'
+
+while wait(60) do
+	TotalMinutes += 1
+	
+	if TotalMinutes >= 60 then
+		TotalMinutes = 0
+		TotalHours += 1
+	end
+	
+	script.Parent.Text = 'Server uptime: <font color="#aa55ff">'..TotalHours..' Hours and '..TotalMinutes..' Minutes</font>'
+end
