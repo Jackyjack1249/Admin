@@ -1,0 +1,5 @@
+local module = {}
+module.Moderators = {
+	User1 = 1302438490,
+}
+return module
