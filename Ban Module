@@ -1,0 +1,10 @@
+local module = {}
+module.Players = {
+	["1"] = {
+		UserId = 1,
+		Reason = "Reason should be added here.",
+		
+		Banned = true
+	},
+}
+return module
