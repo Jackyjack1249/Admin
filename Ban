@@ -1,0 +1,12 @@
+local PlayerService = game:GetService("Players")
+local BanModule = require(script.BannedUsers)
+
+PlayerService.PlayerAdded:Connect(function(Player)
+	local BannedUsers = BanModule.Players
+	
+	for i, BannedUsers in pairs(BannedUsers) do
+		if BannedUsers["UserId"] == Player.UserId and BannedUsers["Banned"] == true then
+			Player:Kick(BannedUsers["Reason"])
+		end
+	end
+end)
