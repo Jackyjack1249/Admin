@@ -1,0 +1,5 @@
+game:GetService("ReplicatedStorage").Admin.LiveData.OnClientEvent:Connect(function(ConcurrentPlayers, ModeratorsOnline, AllServers)
+	script.Parent.Frame.Current.TextLabel.Text = 'Concurrent players: <font color="##ffaa00">'..ConcurrentPlayers..'</font>'
+	script.Parent.Frame.OnlineMods.TextLabel.Text = 'Online moderators: <font color="##ffaa00">'..ModeratorsOnline..'</font>'
+	script.Parent.Frame.ActiveServers.TextLabel.Text = 'Active servers: <font color="##ffaa00">'..AllServers..'</font>'
+end)
