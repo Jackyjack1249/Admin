@@ -1,0 +1,37 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local function Avatar(Player)
+	local thumbType = Enum.ThumbnailType.HeadShot
+	local thumbSize = Enum.ThumbnailSize.Size420x420
+
+	local content, isReady = Players:GetUserThumbnailAsync(Player.UserId, thumbType, thumbSize)
+
+	return content
+end
+
+local function Update(PlayersTable)
+	for i, Frames in pairs(script.Parent:GetChildren()) do
+		if Frames:IsA("Frame") then
+			Frames:Destroy()
+		end
+	end
+	
+	print(PlayersTable)
+
+	for i, Player in pairs(PlayersTable) do
+		print(Player)
+		local Template = script.Frame:Clone()
+
+		Template.ImageLabel.Image = Avatar(Player)
+
+		Template.ImageLabel.UserName.Text = Player.Name
+		Template.ImageLabel.Them.Value = Player
+
+		Template.Parent = script.Parent
+	end
+end
+
+ReplicatedStorage.Admin.UpdatePlayers.OnClientEvent:Connect(function(PlayersTable)
+	Update(PlayersTable)
+end)
