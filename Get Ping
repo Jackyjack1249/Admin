@@ -1,0 +1,3 @@
+while wait() do
+	script.Parent.Text = 'Ping: <font color="##aa55ff">'..game:GetService("Players").LocalPlayer:GetNetworkPing() * 1000 .."</font>"
+end
