@@ -1,0 +1,5 @@
+game:GetService("ReplicatedStorage").Admin.Statistics.OnClientEvent:Connect(function(BannedPlayers, UnbannedPlayers, WarnedPlayers)
+	script.Parent.Frame.Banned.TextLabel.Text = 'Banned Players: <font color="##ffaa00">'..BannedPlayers..'</font>'
+	script.Parent.Frame.Unbans.TextLabel.Text = 'Un-Banned Players: <font color="##ffaa00">'..UnbannedPlayers..'</font>'
+	script.Parent.Frame.Warnings.TextLabel.Text = 'Warned Players: <font color="##ffaa00">'..WarnedPlayers..'</font>'
+end)
