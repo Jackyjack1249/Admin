@@ -1,0 +1,3 @@
+game:GetService("ReplicatedStorage").Admin.Revenue.OnClientEvent:Connect(function(GamepassSales)
+	script.Parent.Gamepass.Frame.TextLabel.Text = 'Gamepass sales <font color="##ffaa00">'..GamepassSales..'</font>'
+end)
