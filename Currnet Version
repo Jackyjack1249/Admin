@@ -1,0 +1,3 @@
+local Version = game:GetService("ReplicatedStorage").Version
+
+script.Parent.Text = 'Current version: <font color="#aa55ff">v'..Version.Value..'</font>'
